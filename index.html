@@ -2,240 +2,32 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f6feb">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="메모">
-<title>메모</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>메모 - 새 주소로 이동</title>
 <style>
-  :root {
-    --bg: #f4f5f7; --card: #fff; --text: #1d1f23; --sub: #6b7280;
-    --line: #e5e7eb; --accent: #1f6feb; --mark: #ffe58a; --danger: #d93025;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #121417; --card: #1d2025; --text: #eceef1; --sub: #9aa1ab;
-      --line: #2c3036; --accent: #4c8dff; --mark: #6b5a12; --danger: #ff6b5e; }
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
-    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; }
-  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-  .view { position: fixed; inset: 0; display: flex; flex-direction: column; }
-  .hidden { display: none !important; }
-
-  /* 목록 화면 */
-  header { padding: calc(env(safe-area-inset-top) + 14px) 16px 10px; background: var(--bg); }
-  h1 { margin: 0 0 10px; font-size: 26px; }
-  .search { display: flex; align-items: center; gap: 8px; background: var(--card);
-    border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
-  .search input { flex: 1; border: 0; outline: 0; background: none; color: var(--text);
-    font-size: 16px; padding: 11px 0; }
-  .search .clear { font-size: 18px; color: var(--sub); padding: 4px; }
-  .count { font-size: 13px; color: var(--sub); margin-top: 8px; }
-  #list { flex: 1; overflow-y: auto; padding: 4px 16px calc(env(safe-area-inset-bottom) + 100px); }
-  .item { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-    padding: 12px 14px; margin-bottom: 10px; width: 100%; text-align: left; display: block; }
-  .item .t { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item .p { color: var(--sub); font-size: 14px; margin-top: 4px; line-height: 1.4;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .item .d { color: var(--sub); font-size: 12px; margin-top: 6px; }
-  mark { background: var(--mark); color: inherit; border-radius: 3px; }
-  .empty { text-align: center; color: var(--sub); margin-top: 60px; line-height: 1.7; }
-  .fab { position: fixed; right: 20px; bottom: calc(env(safe-area-inset-bottom) + 24px);
-    width: 62px; height: 62px; border-radius: 50%; background: var(--accent); color: #fff;
-    font-size: 34px; line-height: 1; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
-
-  /* 편집 화면 */
-  .bar { display: flex; align-items: center; justify-content: space-between;
-    padding: calc(env(safe-area-inset-top) + 8px) 8px 8px; border-bottom: 1px solid var(--line); background: var(--card); }
-  .bar button { padding: 10px 12px; font-size: 16px; }
-  .back { color: var(--accent); font-weight: 600; }
-  .del { color: var(--danger); }
-  .status { font-size: 12px; color: var(--sub); }
-  #editor { flex: 1; display: flex; flex-direction: column; background: var(--card); }
-  #title { border: 0; outline: 0; background: none; color: var(--text); font-size: 20px;
-    font-weight: 700; padding: 14px 16px 6px; }
-  #body { flex: 1; border: 0; outline: 0; resize: none; background: none; color: var(--text);
-    font-size: 16px; line-height: 1.6; padding: 6px 16px calc(env(safe-area-inset-bottom) + 20px); font-family: inherit; }
+body{font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;margin:0;padding:40px 24px;text-align:center;background:#f4f5f7;color:#1d1f23}
+a,button{display:block;margin:14px auto;max-width:320px;padding:14px;border-radius:12px;font-size:16px;text-decoration:none;border:0}
+.p{background:#1f6feb;color:#fff}.s{background:#e5e7eb;color:#1d1f23}
 </style>
 </head>
 <body>
-
-<section id="listView" class="view">
-  <header>
-    <h1>메모</h1>
-    <div class="search">
-      <span aria-hidden="true">🔍</span>
-      <input id="q" type="search" placeholder="메모 검색" autocomplete="off">
-      <button id="clearQ" class="clear hidden" aria-label="검색어 지우기">✕</button>
-    </div>
-    <div class="count" id="count"></div>
-  </header>
-  <div id="list"></div>
-  <button class="fab" id="add" aria-label="새 메모">+</button>
-</section>
-
-<section id="editView" class="view hidden">
-  <div class="bar">
-    <button class="back" id="back">‹ 목록</button>
-    <span class="status" id="status">자동 저장됨</span>
-    <button class="del" id="del">삭제</button>
-  </div>
-  <div id="editor">
-    <input id="title" placeholder="제목" maxlength="200">
-    <textarea id="body" placeholder="내용을 입력하세요. 입력하면 자동으로 저장됩니다."></textarea>
-  </div>
-</section>
-
+<h2>메모앱이 NAS 저장 버전으로 옮겨졌습니다</h2>
+<p id="msg">잠시 후 새 주소로 이동합니다.</p>
+<div id="btns"></div>
 <script>
-const KEY = 'memo-app-v1';
-const $ = id => document.getElementById(id);
-let memos = load();
-let currentId = null;
-let saveTimer = null;
-
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; }
+var NEW = 'https://pkc-nas2-2.taile40584.ts.net/memo/';
+var old = []; try { old = JSON.parse(localStorage.getItem('memo-app-v1')) || []; } catch (e) {}
+old = old.filter(function (m) { return (m.title || '').trim() || (m.body || '').trim(); });
+if (!old.length) { location.replace(NEW); }
+else {
+  var json = JSON.stringify(old), bytes = new TextEncoder().encode(json), bin = '';
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  var b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  document.getElementById('msg').textContent = '이 폰에 예전 메모 ' + old.length + '개가 있습니다. 새 앱(NAS)으로 옮기세요.';
+  document.getElementById('btns').innerHTML = '<a class="p" href="' + NEW + '#import=' + b64 + '">예전 메모 옮기고 새 앱 열기</a><a class="s" href="' + NEW + '">옮기지 않고 새 앱 열기</a>';
 }
-function persist() {
-  localStorage.setItem(KEY, JSON.stringify(memos));
-  $('status').textContent = '자동 저장됨';
-}
-function esc(s) {
-  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function highlight(text, q) {
-  const safe = esc(text);
-  if (!q) return safe;
-  const re = new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-  return safe.replace(re, m => `<mark>${m}</mark>`);
-}
-function fmt(ts) {
-  const d = new Date(ts), now = new Date();
-  const p = n => String(n).padStart(2, '0');
-  if (d.toDateString() === now.toDateString()) return `오늘 ${p(d.getHours())}:${p(d.getMinutes())}`;
-  return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-function titleOf(m) {
-  return m.title.trim() || m.body.trim().split('\n')[0] || '새 메모';
-}
-// 검색 결과 미리보기: 검색어가 있는 부분 근처를 보여 줌
-function previewOf(m, q) {
-  const body = m.body.replace(/\s+/g, ' ').trim();
-  if (!q) return body;
-  const i = body.toLowerCase().indexOf(q.toLowerCase());
-  if (i < 0) return body;
-  const start = Math.max(0, i - 20);
-  return (start > 0 ? '…' : '') + body.slice(start);
-}
-
-function renderList() {
-  const q = $('q').value.trim();
-  $('clearQ').classList.toggle('hidden', !q);
-  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const found = memos
-    .filter(m => {
-      const hay = (m.title + ' ' + m.body).toLowerCase();
-      return terms.every(t => hay.includes(t));   // 띄어쓰기로 여러 단어 검색 (모두 포함)
-    })
-    .sort((a, b) => b.updated - a.updated);
-
-  $('count').textContent = q ? `검색 결과 ${found.length}개` : `메모 ${memos.length}개`;
-  if (!found.length) {
-    $('list').innerHTML = `<div class="empty">${q ? '검색 결과가 없습니다.' : '메모가 없습니다.<br>아래 + 버튼을 눌러 추가하세요.'}</div>`;
-    return;
-  }
-  const hq = terms[0] || '';
-  $('list').innerHTML = found.map(m => `
-    <button class="item" data-id="${m.id}">
-      <div class="t">${highlight(titleOf(m), hq)}</div>
-      <div class="p">${highlight(previewOf(m, hq), hq) || '&nbsp;'}</div>
-      <div class="d">${fmt(m.updated)}</div>
-    </button>`).join('');
-}
-
-function openEditor(id, isNew) {
-  currentId = id;
-  const m = memos.find(x => x.id === id);
-  $('title').value = m.title;
-  $('body').value = m.body;
-  $('status').textContent = '자동 저장됨';
-  $('listView').classList.add('hidden');
-  $('editView').classList.remove('hidden');
-  history.pushState({ edit: id }, '');
-  (isNew ? $('body') : $('body')).focus();
-}
-
-function closeEditor() {
-  flushSave();
-  // 빈 메모는 남기지 않음
-  const m = memos.find(x => x.id === currentId);
-  if (m && !m.title.trim() && !m.body.trim()) {
-    memos = memos.filter(x => x.id !== currentId);
-    persist();
-  }
-  currentId = null;
-  $('editView').classList.add('hidden');
-  $('listView').classList.remove('hidden');
-  renderList();
-}
-
-function scheduleSave() {
-  $('status').textContent = '저장 중…';
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(flushSave, 400);
-}
-function flushSave() {
-  clearTimeout(saveTimer);
-  const m = memos.find(x => x.id === currentId);
-  if (!m) return;
-  if (m.title !== $('title').value || m.body !== $('body').value) {
-    m.title = $('title').value;
-    m.body = $('body').value;
-    m.updated = Date.now();
-  }
-  persist();
-}
-
-$('add').onclick = () => {
-  const m = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-              title: '', body: '', created: Date.now(), updated: Date.now() };
-  memos.push(m);
-  openEditor(m.id, true);
-};
-$('list').onclick = e => {
-  const item = e.target.closest('.item');
-  if (item) openEditor(item.dataset.id, false);
-};
-$('title').oninput = scheduleSave;
-$('body').oninput = scheduleSave;
-$('back').onclick = () => history.back();
-$('del').onclick = () => {
-  if (!confirm('이 메모를 삭제할까요?')) return;
-  memos = memos.filter(x => x.id !== currentId);
-  persist();
-  currentId = null;
-  history.back();
-};
-$('q').oninput = renderList;
-$('clearQ').onclick = () => { $('q').value = ''; renderList(); $('q').focus(); };
-
-// 폰의 뒤로가기 버튼으로 목록으로 돌아가기
-window.addEventListener('popstate', () => {
-  if (!$('editView').classList.contains('hidden')) closeEditor();
-});
-// 앱을 내리거나 닫을 때 바로 저장
-document.addEventListener('visibilitychange', () => { if (document.hidden && currentId) flushSave(); });
-window.addEventListener('pagehide', () => { if (currentId) flushSave(); });
-
-renderList();
-
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (r) { r.forEach(function (x) { x.unregister(); }); });
 </script>
 </body>
 </html>
